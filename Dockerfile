@@ -7,7 +7,8 @@ RUN docker-php-ext-install pdo pdo_mysql
 RUN apt-get update && \
     apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd
+    docker-php-ext-install gd && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Habilita mod_rewrite si es necesario
 RUN a2enmod rewrite
@@ -19,8 +20,12 @@ COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Expone el puerto 80
+# Establecer el propietario correcto de la carpeta de caché (si es necesario)
+RUN mkdir -p /var/www/html/storage && \
+    chown -R www-data:www-data /var/www/html/storage
+
+# Exponer el puerto 80
 EXPOSE 80
 
-# Inicia Apache en primer plano
+# Comando para iniciar Apache en primer plano
 CMD ["apache2-foreground"]
